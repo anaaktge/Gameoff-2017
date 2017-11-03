@@ -1,5 +1,6 @@
 import pygame as pg
 
+
 class GameState(object):
     """
     Parent class for individual game states to inherit from.
