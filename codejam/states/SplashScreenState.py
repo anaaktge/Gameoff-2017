@@ -1,6 +1,7 @@
 from states.GameState import GameState
 import pygame as pg
 
+
 class SplashScreenState(GameState):
     def __init__(self):
         super(SplashScreenState, self).__init__()
@@ -11,7 +12,6 @@ class SplashScreenState(GameState):
     def get_event(self, event):
         if event.type == pg.QUIT:
             self.quit = True
-
 
     def draw(self, surface):
         surface.fill(pg.Color("black"))

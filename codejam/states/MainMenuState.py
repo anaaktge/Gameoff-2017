@@ -1,5 +1,5 @@
 from states.GameState import GameState
 
-class SplashScreen(GameState):
+class MainMenuState(GameState):
     def __init__(self):
-        super(SplashScreen, self).__init__()
+        super(MainMenuState, self).__init__()
