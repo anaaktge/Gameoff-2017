@@ -1,6 +1,7 @@
 import sys
 import pygame as pg
 
+from states.DragAndDrop import DragAndDrop
 from states.MainMenuState import MainMenuState
 from states.SplashScreenState import SplashScreenState
 
@@ -52,9 +53,10 @@ if __name__ == "__main__":
     screen = pg.display.set_mode((1280, 720))
     states = {
         "SPLASH": SplashScreenState(),
-        "MainMenu": MainMenuState()
+        "MainMenu": MainMenuState(),
+        "DragAndDrop": DragAndDrop()
     }
-    game = Game(screen, states, "MainMenu")
+    game = Game(screen, states, "DragAndDrop")
     game.run()
     pg.quit()
     sys.exit()
