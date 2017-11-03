@@ -1,9 +1,9 @@
 from states.GameState import GameState
 import pygame as pg
 
-class SplashScreen(GameState):
+class SplashScreenState(GameState):
     def __init__(self):
-        super(SplashScreen, self).__init__()
+        super(SplashScreenState, self).__init__()
         self.title = self.font.render("Splash Screen", True, pg.Color("dodgerblue"))
         self.title_rect = self.title.get_rect(center=self.screen_rect.center)
         self.persist["screen_color"] = "black"
