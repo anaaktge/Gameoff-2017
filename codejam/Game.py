@@ -1,7 +1,8 @@
 import sys
 import pygame as pg
 
-from states.SplashScreen import SplashScreen
+from states.MainMenuState import MainMenuState
+from states.SplashScreenState import SplashScreenState
 
 
 class Game(object):
@@ -49,8 +50,11 @@ class Game(object):
 if __name__ == "__main__":
     pg.init()
     screen = pg.display.set_mode((1280, 720))
-    states = {"SPLASH": SplashScreen()}
-    game = Game(screen, states, "SPLASH")
+    states = {
+        "SPLASH": SplashScreenState(),
+        "MainMenu": MainMenuState()
+    }
+    game = Game(screen, states, "MainMenu")
     game.run()
     pg.quit()
     sys.exit()
