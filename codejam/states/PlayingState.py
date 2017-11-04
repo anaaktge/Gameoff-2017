@@ -58,6 +58,8 @@ class PlayingState(GameState):
         # These things include checking if a wave is done, updating minions,enemies, traps, yourself
         # autosave would go here
         # see SplashScreen for timeout example
+        # Basically we need to have a "state" machine here to toggle between during wave and non wave times
+        #TODO WRITE THIS
         self.dungeon_master.update(dt)
         for enemy in self.enemies:
             enemy.update(dt)

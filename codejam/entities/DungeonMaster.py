@@ -14,7 +14,7 @@ class DungeonMaster(Base):
     unicorn_tears = Column(Integer)
     health = Column(Integer)
 
-
+#TODO WRITE THIS CRAP
 class DungeonMasterGameObject(object):
     def __init__(self, dungeon_master_entitiy=None):
         self.entity = dungeon_master_entitiy

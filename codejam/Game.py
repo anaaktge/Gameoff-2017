@@ -2,7 +2,6 @@ import sys
 import pygame as pg
 
 from states.MainMenuState import MainMenuState
-from states.MapMaker import MapMaker
 from states.PlayingState import PlayingState
 from states.SplashScreenState import SplashScreenState
 
@@ -55,7 +54,6 @@ if __name__ == "__main__":
     states = {
         "Splash": SplashScreenState(),
         "MainMenu": MainMenuState(),
-        "MapMaker": MapMaker(),
         "PlayingState": PlayingState()
     }
     game = Game(screen, states, "Splash")

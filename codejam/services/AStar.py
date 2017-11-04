@@ -1,7 +1,7 @@
 import heapq
 
 
-# TODO COMMENT THIS SHIT
+# TODO COMMENT THIS
 class Cell(object):
     def __init__(self, x, y, reachable):
         self.reachable = reachable
