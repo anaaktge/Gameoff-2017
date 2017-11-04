@@ -2,6 +2,7 @@ import sys
 import pygame as pg
 
 from states.MainMenuState import MainMenuState
+from states.MapMaker import MapMaker
 from states.SplashScreenState import SplashScreenState
 
 
@@ -52,9 +53,10 @@ if __name__ == "__main__":
     screen = pg.display.set_mode((1280, 720))
     states = {
         "SPLASH": SplashScreenState(),
-        "MainMenu": MainMenuState()
+        "MainMenu": MainMenuState(),
+        "MapMaker": MapMaker()
     }
-    game = Game(screen, states, "MainMenu")
+    game = Game(screen, states, "MapMaker")
     game.run()
     pg.quit()
     sys.exit()
