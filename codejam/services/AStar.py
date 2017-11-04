@@ -1,16 +1,9 @@
 import heapq
 
+
+# TODO COMMENT THIS SHIT
 class Cell(object):
     def __init__(self, x, y, reachable):
-        """Initialize new cell.
-        @param reachable is cell reachable? not a wall?
-        @param x cell x coordinate
-        @param y cell y coordinate
-        @param g cost to move from the starting cell to this cell.
-        @param h estimation of the cost to move from this cell
-                 to the ending cell.
-        @param f f = g + h
-        """
         self.reachable = reachable
         self.x = x
         self.y = y
@@ -61,14 +54,14 @@ class AStar(object):
 
     def get_adjacent_cells(self, cell):
         cells = []
-        if cell.x < self.grid_width-1:
-            cells.append(self.get_cell(cell.x+1, cell.y))
+        if cell.x < self.grid_width - 1:
+            cells.append(self.get_cell(cell.x + 1, cell.y))
         if cell.y > 0:
-            cells.append(self.get_cell(cell.x, cell.y-1))
+            cells.append(self.get_cell(cell.x, cell.y - 1))
         if cell.x > 0:
-            cells.append(self.get_cell(cell.x-1, cell.y))
-        if cell.y < self.grid_height-1:
-            cells.append(self.get_cell(cell.x, cell.y+1))
+            cells.append(self.get_cell(cell.x - 1, cell.y))
+        if cell.y < self.grid_height - 1:
+            cells.append(self.get_cell(cell.x, cell.y + 1))
         return cells
 
     def get_path(self):

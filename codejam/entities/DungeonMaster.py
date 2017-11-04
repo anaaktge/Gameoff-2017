@@ -13,3 +13,18 @@ class DungeonMaster(Base):
     infamy = Column(Integer)
     unicorn_tears = Column(Integer)
     health = Column(Integer)
+
+
+class DungeonMasterGameObject(object):
+    def __init__(self, dungeon_master_entitiy=None):
+        self.entity = dungeon_master_entitiy
+        pass
+
+    def handle_event(self, event):
+        pass
+
+    def update(self, dt):
+        pass
+
+    def draw(self, surface):
+        pass
