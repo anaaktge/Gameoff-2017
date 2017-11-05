@@ -15,13 +15,24 @@ class PlayingState(GameState):
         self.enemies = None
         self.shop = None
         self.game_map = None
-        self.map_width = 60
-        self.map_height = 100
+        self.map_width = 200
+        self.map_height = 200
+        self.zoom = 1
+        # wall, path, start, end
         self.colors = [
-            (0, 0, 0),
-            (255, 255, 255),
-            (255, 0, 0)
+            (165, 42, 42),
+            (128, 128, 128),
+            (255, 0, 0),
+            (0, 0, 255),
+            (0, 255, 0),
+            (255, 255, 0)
         ]
+        self.size = (2000, 2000)
+        self.drag_mouse = False
+        self.rectangle = Rect(0,0,500,500)
+        self.drawn_size = 10
+        self.offset_y = 0
+        self.offset_x = 0
 
     def startup(self, persistent):
         self.persist = persistent
@@ -29,7 +40,7 @@ class PlayingState(GameState):
         if 'game_map' in self.persist and self.persist['game_map'] is not None:
             self.game_map = self.persist['game_map']
         else:
-            self.game_map = GameMap.generate_map(self.map_width, self.map_height)
+            self.game_map = GameMap.generate_map(self.map_width, self.map_height, starting_points_count=1)
             self.persist['map'] = self.game_map
 
         # TODO Convert to wave generator at some point
@@ -44,10 +55,30 @@ class PlayingState(GameState):
         else:
             self.persist['dungeon_master'] = self.dungeon_master
 
+        #self.rectangle.center = self.game_map.ending_point
+
     def get_event(self, event):
         # Handle clicks here
         if event.type == pg.QUIT:
             self.quit = True
+        if event.type == pg.MOUSEBUTTONUP:
+            self.drag_mouse = False
+        if event.type == pg.MOUSEBUTTONDOWN:
+            if event.button == 4:
+                self.zoom -= .01
+            elif event.button == 5:
+                self.zoom += .01
+            if event.button == 1:
+                self.drag_mouse = True
+                mouse_x, mouse_y = event.pos
+                self.offset_x = self.rectangle.x - mouse_x
+                self.offset_y = self.rectangle.y - mouse_y
+
+        elif event.type == pg.MOUSEMOTION:
+            if self.drag_mouse:
+                mouse_x, mouse_y = event.pos
+                self.rectangle.x = mouse_x + self.offset_x
+                self.rectangle.y = mouse_y + self.offset_y
         self.dungeon_master.handle_event(event)
         # TODO ADD MINION AND TARP HANDLING
         for enemy in self.enemies:
@@ -59,46 +90,50 @@ class PlayingState(GameState):
         # autosave would go here
         # see SplashScreen for timeout example
         # Basically we need to have a "state" machine here to toggle between during wave and non wave times
-        #TODO WRITE THIS
+        # TODO WRITE THIS
         self.dungeon_master.update(dt)
         for enemy in self.enemies:
             enemy.update(dt)
 
     def draw(self, surface):
+        draw_surface = pg.Surface(self.size)
         # DRAW EVERYTHING HERE
         surface.fill(pg.Color("black"))
         # TODO change this to drawing tiles or a mesh or something to improve performance
         for i in range(self.map_width):
             for j in range(self.map_height):
-                rect = Rect(i + i * 5, j + j * 5, 5, 5)
+                rect = Rect(i * 10, j * 10, 10, 10)
                 color = self.colors[self.game_map.generated_map[i][j]]
-                pg.draw.rect(surface, color, rect)
+                pg.draw.rect(draw_surface, color, rect)
 
         # TODO RESEARCH BATCH DRAWING METHODS
-        self.dungeon_master.draw(surface)
+        self.dungeon_master.draw(draw_surface)
         for enemy in self.enemies:
-            enemy.draw(surface)
+            enemy.draw(draw_surface)
+        sub_surface = pg.Surface(self.rectangle.size)
+        sub_surface.blit(draw_surface, (0,0), self.rectangle)
+        pg.transform.scale(sub_surface, (self.screen_rect.width, self.screen_rect.height), surface)
+
 
     def generate_enemies(self):
         enemies = []
-        starting_points = [
-            (self.map_width - 2, 0),
-            (1, 0),
-            (self.map_width // 2, 0),
-        ]
-
-        self.players = []
-        self.end_point = (self.map_width // 2, self.map_height // 2)
-
+        starting_points = self.game_map.starting_points
         solver = AStar()
-        for i in range(0, len(starting_points) - 1):
+        walls = []
+        for i in range(0, self.game_map.width):
+            for j in range(0, self.game_map.height):
+                if self.game_map.generated_map[i][j] == 1:
+                    walls.append((i, j))
+
+        for i in range(0, len(starting_points)):
             enemy = EnemyAdventurerGameObject()
             enemy.entity.speed = 10
             solver.clear()
-            solver.init_grid(self.map_width, self.map_height, (), starting_points[i], self.end_point)
+            solver.init_grid(self.map_width, self.map_height, walls, starting_points[i], self.game_map.ending_point)
             path = solver.solve()
-            enemy.path = path
             enemy.position = starting_points[i]
+            self.persist['path'] = path
+            enemy.path = path
             enemies.append(enemy)
 
         return enemies

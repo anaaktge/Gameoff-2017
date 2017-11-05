@@ -15,6 +15,7 @@ class Game(object):
         self.states = states
         self.state_name = start_state
         self.state = self.states[self.state_name]
+        self.state.startup(self.state.persist)
 
     def event_loop(self):
         for event in pg.event.get():
@@ -56,7 +57,7 @@ if __name__ == "__main__":
         "MainMenu": MainMenuState(),
         "PlayingState": PlayingState()
     }
-    game = Game(screen, states, "Splash")
+    game = Game(screen, states, "PlayingState")
     game.run()
     pg.quit()
     sys.exit()

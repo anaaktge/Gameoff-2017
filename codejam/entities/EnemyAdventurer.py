@@ -49,12 +49,12 @@ class EnemyAdventurerGameObject(object):
         pg.draw.circle(
             surface,
             (255, 0, 0),
-            (int(self.position[0] * 5 + self.position[0]), int(self.position[1] * 5 + self.position[1])),
+            (int(self.position[0] * 10), int(self.position[1] * 10)),
             4
         )
 
     def take_damage(self, damage):
-        ##Self explanitory,
+        ##Self explanitory
         self.entity.health -= damage
         if self.entity.health <= 0:
             self.dead = True
@@ -67,7 +67,7 @@ class EnemyAdventurerGameObject(object):
             math.pow(next_point[0] - current_point[0], 2) + math.pow(next_point[1] - current_point[1], 2))
         # If close enough (cough cough here be a bug) move to next point
         if sqrted <= 1:
-            if (self.next_step <= len(self.path) - 4):
+            if (self.next_step <= len(self.path) - 2):
                 self.update_direction()
                 self.position = self.path[self.next_step]
                 self.current_step = self.next_step
