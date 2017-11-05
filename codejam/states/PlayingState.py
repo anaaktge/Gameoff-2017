@@ -19,6 +19,10 @@ class PlayingState(GameState):
         self.map_width = 200
         self.map_height = 200
         self.zoom = 1
+        self.sprites = [
+            pg.image.load(os.path.join('assets', 'grass.png')),
+            pg.image.load(os.path.join('assets', 'cobble.png'))
+        ]
         # wall, path, start, end
         self.colors = [
             (165, 42, 42),
@@ -30,12 +34,13 @@ class PlayingState(GameState):
         ]
         self.size = (2000, 2000)
         self.drag_mouse = False
-        self.rectangle = Rect(0, 0, 500, 500)
+        self.rectangle = Rect(0, 0, 200, 200)
         self.drawn_size = 10
         self.offset_y = 0
         self.offset_x = 0
         self.add_thing = False
         self.image = pg.image.load(os.path.join('assets', 'wrapper.png'))
+
         self.image.convert()
         self.image_rect = self.screen_rect
 
@@ -60,7 +65,7 @@ class PlayingState(GameState):
         else:
             self.persist['dungeon_master'] = self.dungeon_master
 
-        self.rectangle.center = (self.game_map.ending_point[0]*10, self.game_map.ending_point[1]*10)
+        self.rectangle.center = (self.game_map.starting_points[0][0]*10, self.game_map.starting_points[0][1]*10)
 
     def get_event(self, event):
         # Handle clicks here
@@ -116,8 +121,9 @@ class PlayingState(GameState):
         for i in range(self.map_width):
             for j in range(self.map_height):
                 rect = Rect(i * 10, j * 10, 10, 10)
-                color = self.colors[self.game_map.generated_map[i][j]]
-                pg.draw.rect(draw_surface, color, rect)
+                color = self.sprites[self.game_map.generated_map[i][j]]
+                if self.rectangle.contains(rect):
+                    draw_surface.blit(color, rect)
 
         # TODO RESEARCH BATCH DRAWING METHODS
         self.dungeon_master.draw(draw_surface)

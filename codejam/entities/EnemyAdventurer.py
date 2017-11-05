@@ -1,3 +1,5 @@
+import os
+from pygame.rect import Rect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String
 import pygame as pg
@@ -39,6 +41,7 @@ class EnemyAdventurerGameObject(object):
         # Current direction its moving
         self.directionX = 0
         self.directionY = 0
+        self.sprite =  pg.image.load(os.path.join('assets', 'enemy.png'))
 
     def handle_event(self, event):
         # Do whatever handling for the event that gets passed in here
@@ -46,12 +49,8 @@ class EnemyAdventurerGameObject(object):
 
     def draw(self, surface):
         # Prolly all this will become a blit image, we may wanna refactor to mass blit at some point
-        pg.draw.circle(
-            surface,
-            (255, 0, 0),
-            (int(self.position[0] * 10), int(self.position[1] * 10)),
-            4
-        )
+        rect = Rect(self.position[0], self.position[1], 10,10)
+        surface.blit(self.sprite, rect)
 
     def take_damage(self, damage):
         ##elf explanitory
@@ -73,7 +72,6 @@ class EnemyAdventurerGameObject(object):
                 next_point[1] - current_point[1],
                 2)
         )
-
         # If close enough (cough cough here be a bug) move to next point
         if sqrted <= 1:
             if (self.next_step <= len(self.path) - 2):

@@ -122,9 +122,9 @@ def generate_map(width, height, starting_points_count=1, complexity=100):
         current_point = next_solve_point
 
     for current_point in rooms:
-        generated_map.generated_map[current_point[0]][current_point[1]] = 4
+        generated_map.generated_map[current_point[0]][current_point[1]] = 0
     for point in generated_map.starting_points:
-        generated_map.generated_map[point[0]][point[1]] = 2
-    generated_map.generated_map[ending_point[0]][ending_point[1]] = 3
+        generated_map.generated_map[point[0]][point[1]] = 0
+    generated_map.generated_map[ending_point[0]][ending_point[1]] = 0
 
     return generated_map
