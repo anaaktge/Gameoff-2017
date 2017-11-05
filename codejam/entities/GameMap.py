@@ -111,6 +111,14 @@ def generate_map(width, height, starting_points_count=1, complexity=100):
                 generated_map.generated_map[i[0]][i[1] + 1] = 0
             if i[1] - 1 in range(0, height - 1):
                 generated_map.generated_map[i[0]][i[1] - 1] = 0
+            if i[0] + 2 in range(0, width - 2):
+                generated_map.generated_map[i[0] + 2][i[1]] = 0
+            if i[0] - 2 in range(0, width - 2):
+                generated_map.generated_map[i[0] - 2][i[1]] = 0
+            if i[1] + 2 in range(0, height - 2):
+                generated_map.generated_map[i[0]][i[1] + 2] = 0
+            if i[1] - 2 in range(0, height - 2):
+                generated_map.generated_map[i[0]][i[1] - 2] = 0
         current_point = next_solve_point
 
     for current_point in rooms:

@@ -54,7 +54,7 @@ class EnemyAdventurerGameObject(object):
         )
 
     def take_damage(self, damage):
-        ##Self explanitory
+        ##elf explanitory
         self.entity.health -= damage
         if self.entity.health <= 0:
             self.dead = True
@@ -63,8 +63,17 @@ class EnemyAdventurerGameObject(object):
         # This is called erry tick so do whatever updates here
         next_point = self.path[self.next_step]
         current_point = self.position
+
         sqrted = math.sqrt(
-            math.pow(next_point[0] - current_point[0], 2) + math.pow(next_point[1] - current_point[1], 2))
+            math.pow(
+                next_point[0] - current_point[0],
+                2
+            ) +
+            math.pow(
+                next_point[1] - current_point[1],
+                2)
+        )
+
         # If close enough (cough cough here be a bug) move to next point
         if sqrted <= 1:
             if (self.next_step <= len(self.path) - 2):

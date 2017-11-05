@@ -1,3 +1,4 @@
+import os
 from pygame.rect import Rect
 import pygame  as pg
 
@@ -29,10 +30,14 @@ class PlayingState(GameState):
         ]
         self.size = (2000, 2000)
         self.drag_mouse = False
-        self.rectangle = Rect(0,0,500,500)
+        self.rectangle = Rect(0, 0, 500, 500)
         self.drawn_size = 10
         self.offset_y = 0
         self.offset_x = 0
+        self.add_thing = False
+        self.image = pg.image.load(os.path.join('assets', 'wrapper.png'))
+        self.image.convert()
+        self.image_rect = self.screen_rect
 
     def startup(self, persistent):
         self.persist = persistent
@@ -55,12 +60,15 @@ class PlayingState(GameState):
         else:
             self.persist['dungeon_master'] = self.dungeon_master
 
-        #self.rectangle.center = self.game_map.ending_point
+        self.rectangle.center = (self.game_map.ending_point[0]*10, self.game_map.ending_point[1]*10)
 
     def get_event(self, event):
         # Handle clicks here
         if event.type == pg.QUIT:
             self.quit = True
+        if event.type == pg.KEYDOWN:
+            if event.key == pg.K_r:
+                self.add_thing = not self.add_thing
         if event.type == pg.MOUSEBUTTONUP:
             self.drag_mouse = False
         if event.type == pg.MOUSEBUTTONDOWN:
@@ -69,10 +77,13 @@ class PlayingState(GameState):
             elif event.button == 5:
                 self.zoom += .01
             if event.button == 1:
-                self.drag_mouse = True
-                mouse_x, mouse_y = event.pos
-                self.offset_x = self.rectangle.x - mouse_x
-                self.offset_y = self.rectangle.y - mouse_y
+                if not self.add_thing:
+                    self.drag_mouse = True
+                    mouse_x, mouse_y = event.pos
+                    self.offset_x = self.rectangle.x - mouse_x
+                    self.offset_y = self.rectangle.y - mouse_y
+                else:
+                    self.game_map.generated_map[10][10] = 4
 
         elif event.type == pg.MOUSEMOTION:
             if self.drag_mouse:
@@ -80,6 +91,7 @@ class PlayingState(GameState):
                 self.rectangle.x = mouse_x + self.offset_x
                 self.rectangle.y = mouse_y + self.offset_y
         self.dungeon_master.handle_event(event)
+
         # TODO ADD MINION AND TARP HANDLING
         for enemy in self.enemies:
             enemy.handle_event(event)
@@ -99,6 +111,7 @@ class PlayingState(GameState):
         draw_surface = pg.Surface(self.size)
         # DRAW EVERYTHING HERE
         surface.fill(pg.Color("black"))
+
         # TODO change this to drawing tiles or a mesh or something to improve performance
         for i in range(self.map_width):
             for j in range(self.map_height):
@@ -110,10 +123,13 @@ class PlayingState(GameState):
         self.dungeon_master.draw(draw_surface)
         for enemy in self.enemies:
             enemy.draw(draw_surface)
+        #this does the drawing in the square on the screen
+        #TODO prolly figure out a better method of doing this
         sub_surface = pg.Surface(self.rectangle.size)
-        sub_surface.blit(draw_surface, (0,0), self.rectangle)
-        pg.transform.scale(sub_surface, (self.screen_rect.width, self.screen_rect.height), surface)
-
+        sub_surface.blit(draw_surface, (0, 0), self.rectangle)
+        s = pg.transform.scale(sub_surface, (self.screen_rect.width, self.screen_rect.height-170))
+        surface.blit(s, (0,0), (0,0,self.screen_rect.width,self.screen_rect.height-170))
+        surface.blit(self.image, self.image_rect)
 
     def generate_enemies(self):
         enemies = []
