@@ -21,4 +21,5 @@ class MainMenuState(GameState):
 
     def draw(self, surface):
         surface.fill(pg.Color("black"))
+
         surface.blit(self.title, self.title_rect)

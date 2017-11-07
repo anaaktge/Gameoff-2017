@@ -1,130 +1,110 @@
 import random
-from collections import deque
-import math
 
 from services.AStar import AStar
 
 
+class Room(object):
+    def __init__(self,x,y, type, row=0):
+        self.x = x
+        self.y = y
+        self.type = type
+        self.row = row
+        self.connected = []
+
+    def get_pos(self):
+        return (self.x, self.y)
+
 class GameMap(object):
-    def __init__(self, w=60, h=100):
+    def __init__(self, w=36, h=66):
         self.width = w
         self.height = h
         # Initialize map to nothing
         self.generated_map = [[1 for x in range(self.height)] for y in range(self.width)]
         # initialize starting points and ending points to nothing, these will be filled in by generator
-        self.starting_points = []
-        self.ending_point = None
+        self.starting_room = None
+        self.ending_room = None
+        self.rooms = []
+
+    def get_at(self, x, y):
+        return self.generated_map[x][y]
+
+    def set_at(self, x, y, settable):
+        self.generated_map[x][y] = settable
+
+    def add_room_centered_at(self, center_x, center_y, room_type=0, row=0):
+        room_width = 3
+        room_height = 5
+        for i in range(center_x-room_width, center_x+room_width):
+            for j in range(center_y-room_height, center_y+room_height):
+                self.set_at(i, j, room_type)
+
+        self.rooms.append(Room(center_x, center_y, type, row))
+
+    def build_pathways(self):
+        current_room = self.rooms.pop(0)
+        solver = AStar()
+        while len(self.rooms):
+            next_room = self.rooms.pop(0)
+            solver.clear()
+            solver.init_grid(self.width, self.height, (), current_room.get_pos(), next_room.get_pos())
+            solution = solver.solve()
+            for i in solution:
+                self.set_at(i[0], i[1], 0)
+            current_room = next_room
+
+    def add_path_between(self, room_1, room_2):
+        pass
 
 
-def __create_starting_points(size, end_position, side, min_distance, starting_points_count=1):
-    starting_points = []
-    while starting_points_count != 0:
-        if side == 1:
-            # left
-            starting_point_x = 0
-            starting_point_y = random.randint(0, size[1] - 1)
-            pass
-        else:
-            # right
-            starting_point_x = size[0] - 1
-            starting_point_y = random.randint(0, size[1] - 1)
-        point = (starting_point_x, starting_point_y)
+def generate_game_map(width, height, starting_positions=1):
+    game_map = GameMap(width, height)
 
-        if math.hypot(end_position[0] - starting_point_x, end_position[1] - starting_point_y) > min_distance:
-            starting_points.append(point)
-            starting_points_count -= 1
+    third = height//3
+    sixth = width//6
+    end_room_pos = random.randint(5, width - 5)
+    for i in range(end_room_pos - 2, end_room_pos + 2):
+        for j in range(2, 6):
+            game_map.set_at(i, j, 3)
+    game_map.starting_room = Room(end_room_pos, 4, 3, 0)
+    game_map.rooms.append(game_map.starting_room)
 
-    return starting_points
+    start_poss = get_room_x_positions(sixth)
 
+    for start_pos in start_poss:
+        game_map.add_room_centered_at(random.randint(start_pos-1, start_pos+1), random.randint(13, third-5), 0, 1)
 
-def __generate_ending_point(size):
-    width, height = size
-    side = random.randint(0, 1)
-    if side == 0:
-        # left
-        pos_x = random.randint(5, 20)
-        pos_y = random.randint(5, height - 5)
-    else:
-        # right
-        pos_x = random.randint(width - 20, width - 5)
-        pos_y = random.randint(5, height - 5)
+    middle_poss = get_room_x_positions(sixth)
 
-    end_point = (pos_x, pos_y)
-    return (end_point, side)
+    for middle_pos in middle_poss:
+        game_map.add_room_centered_at(random.randint(middle_pos-2, middle_pos+2), random.randint((third*2)-7, (third*3)-7), 0, 2)
 
+    end_poss = get_room_x_positions(sixth)
+        
+    for end_pos in end_poss:
+        game_map.add_room_centered_at(random.randint(end_pos - 2, end_pos + 2), random.randint(third*2 + 4, third*3-10), 0, 3)
 
-def __isFarAway(x1, x2, y1, y2, min_distance):
-    return math.hypot(x2 - x1, y2 - y1) > min_distance
+    end_room_pos = random.randint(5, width-5)
+    for i in range(end_room_pos-3, end_room_pos+3):
+        for j in range(height-6, height-2):
+            game_map.set_at(i,j,2)
+    game_map.ending_room = Room(end_room_pos, height-4, 2, 4)
+    game_map.rooms.append(game_map.ending_room)
+    game_map.build_pathways()
+
+    return game_map
 
 
-def __generate_rooms(width, height, starting_points, ending_point, room_count=1):
-    rooms = [starting_points[0]]
-
-    while room_count != 0:
-        x = random.randint(10, width - 10)
-        y = random.randint(10, height - 10)
-        if __isFarAway(x, rooms[-1][0], y, rooms[-1][1], 20) and __isFarAway(ending_point[0], x, ending_point[1], y,
-                                                                             20):
-            rooms.append((x, y))
-            room_count -= 1
-    return rooms
-
-
-def generate_map(width, height, starting_points_count=1, complexity=100):
-    # ez mode 4 now
-    # TODO CONVERT TO COORDINATE ARRAY FOR PERFORMANCE REASONS
-    generated_map = GameMap(width, height)
-
-    ending_point, side = __generate_ending_point((generated_map.width, generated_map.height))
-    generated_map.ending_point = ending_point
-
-    generated_map.starting_points = __create_starting_points(
-        (generated_map.width, generated_map.height),
-        ending_point,
-        side,
-        100,
-        starting_points_count
-    )
-
-    rooms = __generate_rooms(width, height, generated_map.starting_points, generated_map.ending_point, room_count=2)
-
-    room_deque = deque(rooms)
-
-    room_deque.append(generated_map.ending_point)
-
-    solver = AStar()
-    current_point = room_deque.pop()
-
-    while len(room_deque):
-        next_solve_point = room_deque.pop()
-        solver.clear()
-
-        solver.init_grid(width, height, (), current_point, next_solve_point)
-        solution = solver.solve()
-        for i in solution:
-            generated_map.generated_map[i[0]][i[1]] = 0
-            if i[0] + 1 in range(0, width - 1):
-                generated_map.generated_map[i[0] + 1][i[1]] = 0
-            if i[0] - 1 in range(0, width - 1):
-                generated_map.generated_map[i[0] - 1][i[1]] = 0
-            if i[1] + 1 in range(0, height - 1):
-                generated_map.generated_map[i[0]][i[1] + 1] = 0
-            if i[1] - 1 in range(0, height - 1):
-                generated_map.generated_map[i[0]][i[1] - 1] = 0
-            if i[0] + 2 in range(0, width - 2):
-                generated_map.generated_map[i[0] + 2][i[1]] = 0
-            if i[0] - 2 in range(0, width - 2):
-                generated_map.generated_map[i[0] - 2][i[1]] = 0
-            if i[1] + 2 in range(0, height - 2):
-                generated_map.generated_map[i[0]][i[1] + 2] = 0
-            if i[1] - 2 in range(0, height - 2):
-                generated_map.generated_map[i[0]][i[1] - 2] = 0
-        current_point = next_solve_point
-
-    for current_point in rooms:
-        generated_map.generated_map[current_point[0]][current_point[1]] = 0
-    for point in generated_map.starting_points:
-        generated_map.generated_map[point[0]][point[1]] = 0
-    generated_map.generated_map[ending_point[0]][ending_point[1]] = 0
-
-    return generated_map
+def get_room_x_positions(sixth):
+    position_type = random.randint(0, 4)
+    poss = []
+    if position_type == 0:
+        poss = [sixth, 5 * sixth]
+    elif position_type == 1:
+        poss = [sixth, 3 * sixth]
+    elif position_type == 2:
+        poss = [3 * sixth, 5 * sixth]
+    elif position_type == 3:
+        poss = [2 * sixth, 4 * sixth]
+    elif position_type == 4:
+        poss = [sixth, 3 * sixth, 5 * sixth]
+    return poss
