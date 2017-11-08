@@ -1,5 +1,5 @@
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
@@ -14,7 +14,8 @@ class DungeonMaster(Base):
     unicorn_tears = Column(Integer)
     health = Column(Integer)
 
-#TODO WRITE THIS CRAP
+
+# TODO WRITE THIS CRAP
 class DungeonMasterGameObject(object):
     def __init__(self, dungeon_master_entitiy=None):
         self.entity = dungeon_master_entitiy

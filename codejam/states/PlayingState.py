@@ -1,5 +1,5 @@
-from pygame.rect import Rect
 import pygame  as pg
+from pygame.rect import Rect
 
 from entities import GameMap
 from entities.DungeonMaster import DungeonMasterGameObject
@@ -64,7 +64,7 @@ class PlayingState(GameState):
         # autosave would go here
         # see SplashScreen for timeout example
         # Basically we need to have a "state" machine here to toggle between during wave and non wave times
-        #TODO WRITE THIS
+        # TODO WRITE THIS
         self.dungeon_master.update(dt)
         for enemy in self.enemies:
             enemy.update(dt)
