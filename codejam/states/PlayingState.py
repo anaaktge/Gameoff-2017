@@ -63,8 +63,8 @@ class PlayingState(GameState):
             self.dungeon_master = self.persist['dungeon_master']
         else:
             self.persist['dungeon_master'] = self.dungeon_master
-        self.rectangle.x = self.game_map.ending_room.x
-        self.rectangle.y = self.game_map.ending_room.y
+        self.rectangle.centerx = self.game_map.ending_room.x
+        self.rectangle.centery = self.game_map.ending_room.y
 
     def get_event(self, event):
         # Handle clicks here
