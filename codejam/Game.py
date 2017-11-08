@@ -49,6 +49,7 @@ class Game(object):
             pg.display.update()
 
 
+
 if __name__ == "__main__":
     pg.init()
     screen = pg.display.set_mode((1280, 720))
