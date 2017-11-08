@@ -20,7 +20,8 @@ class PlayingState(GameState):
         self.colors = [
             (0, 0, 0),
             (255, 255, 255),
-            (255, 0, 0)
+            (255, 0, 0),
+            (0, 0, 255)
         ]
 
     def startup(self, persistent):
@@ -29,7 +30,7 @@ class PlayingState(GameState):
         if 'game_map' in self.persist and self.persist['game_map'] is not None:
             self.game_map = self.persist['game_map']
         else:
-            self.game_map = GameMap.generate_map(self.map_width, self.map_height)
+            self.game_map = GameMap.generate_game_map(self.map_width, self.map_height)
             self.persist['map'] = self.game_map
 
         # TODO Convert to wave generator at some point
@@ -48,6 +49,10 @@ class PlayingState(GameState):
         # Handle clicks here
         if event.type == pg.QUIT:
             self.quit = True
+        if event.type == pg.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                self.game_map = GameMap.generate_game_map(self.map_width, self.map_height)
+                self.enemies = self.generate_enemies()
         self.dungeon_master.handle_event(event)
         # TODO ADD MINION AND TARP HANDLING
         for enemy in self.enemies:
@@ -81,24 +86,23 @@ class PlayingState(GameState):
 
     def generate_enemies(self):
         enemies = []
-        starting_points = [
-            (self.map_width - 2, 0),
-            (1, 0),
-            (self.map_width // 2, 0),
-        ]
-
         self.players = []
-        self.end_point = (self.map_width // 2, self.map_height // 2)
+        end_point = self.game_map.ending_room.get_pos()
+        starting_point = self.game_map.starting_room.get_pos()
+        walls = []
+        for i in range(0, self.game_map.width):
+            for j in range(0, self.game_map.height):
+                if self.game_map.generated_map[i][j] != 0:
+                    walls.append((i, j))
 
         solver = AStar()
-        for i in range(0, len(starting_points) - 1):
-            enemy = EnemyAdventurerGameObject()
-            enemy.entity.speed = 10
-            solver.clear()
-            solver.init_grid(self.map_width, self.map_height, (), starting_points[i], self.end_point)
-            path = solver.solve()
-            enemy.path = path
-            enemy.position = starting_points[i]
-            enemies.append(enemy)
+        enemy = EnemyAdventurerGameObject()
+        enemy.entity.speed = 10
+        solver.clear()
+        solver.init_grid(self.map_width, self.map_height, walls, starting_point, end_point)
+        path = solver.solve()
+        enemy.path = path
+        enemy.position = starting_point
+        enemies.append(enemy)
 
         return enemies
