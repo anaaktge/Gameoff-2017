@@ -31,11 +31,9 @@ class GameMap(object):
     def set_at(self, x, y, settable):
         self.generated_map[x][y] = settable
 
-    def add_room_centered_at(self, center_x, center_y, room_type=0, row=0):
-        room_width = 3
-        room_height = 5
-        for i in range(center_x-room_width, center_x+room_width):
-            for j in range(center_y-room_height, center_y+room_height):
+    def add_room_centered_at(self, center_x, center_y, room_type=0, row=0 , max_room_width = 3, max_room_height = 5):
+        for i in range(center_x-max_room_width, center_x+max_room_width):
+            for j in range(center_y-max_room_height, center_y+max_room_height):
                 self.set_at(i, j, room_type)
 
         self.rooms.append(Room(center_x, center_y, type, row))
@@ -49,7 +47,7 @@ class GameMap(object):
             solver.init_grid(self.width, self.height, (), current_room.get_pos(), next_room.get_pos())
             solution = solver.solve()
             for i in solution:
-                self.set_at(i[0], i[1], 0)
+                self.set_at(i[0], j[0], 0)
             current_room = next_room
 
     def add_path_between(self, room_1, room_2):

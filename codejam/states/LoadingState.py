@@ -9,7 +9,7 @@ class SplashScreenState(GameState):
         super(SplashScreenState, self).__init__()
         self.next_state = "MainMenu"
         self.time = 0
-        self.image = pg.image.load(os.path.join('assets','reptileDisfunction.png'))
+        self.image = pg.image.load(os.path.join('assets','grass.png'))
         self.image_rect = self.image.get_rect(center=self.screen_rect.center)
 
 
