@@ -1,7 +1,8 @@
 import os
 
-from states.GameState import GameState
 import pygame as pg
+
+from states.GameState import GameState
 
 
 class SplashScreenState(GameState):
@@ -9,7 +10,7 @@ class SplashScreenState(GameState):
         super(SplashScreenState, self).__init__()
         self.next_state = "MainMenu"
         self.time = 0
-        self.image = pg.image.load(os.path.join('assets','splash.png'))
+        self.image = pg.image.load(os.path.join('assets', 'splash.png'))
         self.image_rect = self.image.get_rect(center=self.screen_rect.center)
 
     def update(self, dt):
