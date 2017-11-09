@@ -1,0 +1,617 @@
+Index: codejam/entities/Trap.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- codejam/entities/Trap.py	(date 1509829087000)
++++ codejam/entities/Trap.py	(revision )
+@@ -1,5 +1,6 @@
+ from sqlalchemy.ext.declarative import declarative_base
+ from sqlalchemy import Column, Integer, String
++import pygame as pg
+ 
+ Base = declarative_base()
+ 
+@@ -11,9 +12,9 @@
+     name = Column(String)
+ 
+ 
+-class TrapGameObject(object):
++class TrapGameObject(pg.sprite.Sprite):
+     def __init__(self):
+-        pass
++        super().__init__()
+ 
+     def handle_event(self, event):
+         pass
+Index: codejam/services/EnemyWaveGenerator.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- codejam/services/EnemyWaveGenerator.py	(date 1509829087000)
++++ codejam/services/EnemyWaveGenerator.py	(revision )
+@@ -1,3 +1,28 @@
++import pygame as pg
++
++from entities.Enemy_Ranger import EnemyRanger
++from entities.Minion_Goblin import Goblin
++
++#Spits out adventurers
++# Probably will have to manage combat ?
++
+ class EnemyWaveGenerator(object):
+     def __init__(self):
+-        pass
++        print("wave generator: init() ")
++        # probably want to use the Sprite Groups that pygames seems to want
++
++    def generate_adventurer(self):
++        victim = EnemyRanger()
++        print("WaveGen, generated " + victim.name + " id = " + str(victim.id))
++        print("\t health="+ str(victim.health))
++        print("\t sight=" + str(victim.sight))
++        print("\t speed=" + str(victim.speed))
++        return victim
++
++    def generate_minion(self):
++        minion = Goblin()
++        print("WaveGen, generated " + minion.name + " id = " + str(minion.id))
++        print("\t health="+ str(minion.health))
++        print("\t sight=" + str(minion.sight))
++        print("\t speed=" + str(minion.speed))
++        return minion
+Index: codejam/entities/Minion.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- codejam/entities/Minion.py	(date 1509829087000)
++++ codejam/entities/Minion.py	(revision )
+@@ -1,28 +1,139 @@
+ from sqlalchemy.ext.declarative import declarative_base
+ from sqlalchemy import Column, Integer, String
++import pygame as pg
++import itertools
+ 
+ Base = declarative_base()
+ 
++#TODO it might make sense for traps to inherit from MinionGameObject
+ 
++# DB object do not destroy
+ class Minion(Base):
+     __tablename__ = 'minions'
+ 
+     id = Column(Integer, primary_key=True)
++    image = Column(String)
+     name = Column(String)
++    flavor_text = Column(String)
++    speed = Column(Integer)
++    health = Column(Integer)
++    attack = Column(Integer)
++    attack_type = Column(String)
++    gold_cost = Column(Integer)
++    unicorn_tears_cost = Column(Integer)
++    reputation_cost = Column(Integer)
++    resistance_type = Column(String)
++    resistance = Column(Integer)
++    weakness = Column(Integer)
++    weakness_type = Column(String)
++    sight = Column(Integer)
++    phase = Column(String)
+ 
+ 
+-class MinionGameObject(object):
+-    def __init__(self):
+-        pass
++
++class MinionGameObject(pg.sprite.Sprite):
++    id_generator = itertools.count(1)
++
++    def __init__(self, position=(0, 0)):
++        super().__init__()
++
++        self.id = next(self.id_generator)
++        print("Minion.__init__() id= "+str(self.id))
++
++        self.dead = False
++        self.name = "Generic Minion"
++        self.flavor_text = "Yes, Master"
++        self.speed = 1
++        self.sight = 1
++        self.health = 10
++        self.attack = 1
++        self.attack_type = "melee"  # general attacks are melee
++        self.gold_cost = 1
++        self.unicorn_tears_cost = 0
++        self.reputation_cost = 0 # not a true cost, this minion will only work for you when you are evil enough
++        self.resistance_type = None
++        self.resistance = 0
++        self.weakness = 0
++        self.weakness_type = None
++        self.image = None
++        self.phase = "normal"
++        self.position = position
++
++        self.log_me()
+ 
+     def handle_event(self, event):
++        print("Minion.handle_event()")
+         pass
+ 
+     def draw(self, surface):
++        print("Minion.draw should be pink")
++        if self.image is None:
++            print("\tdefaulting to circle")
++            pink = (255, 200, 200)
++            pg.draw.circle(
++                surface,
++                pink,
++                (int(self.position[0] * 5 + self.position[0]), int(self.position[1] * 5 + self.position[1])),
++                4
++            )
++
++    # resistance wears off after a while
++    def take_damage(self, damage_amt, damage_type):
++        print("Minion.take_damage(" + str(damage_amt) + "," + damage_type + ")")
++        if damage_type == self.resistance_type:
++            if self.resistance <= 0:
++                self.health -= damage_amt
++                # If the resistance drops below 0, you've lost it
++                self.resistance_type = None
++                self.resistance = 0 # If fell below, reset to 0
++                print("minion has lost its resistance")
++            else:
++                self.resistance -= damage_amt
++                print("\tminion is resistant to that damage type, new resistance = " + str(self.resistance))
++        self.health -= damage_amt
++        print("\tminion takes full damage. new health="+str(self.entity.health))
++        if self.health <= 0:
++            print("\tminion id= " + str(self.id) + "is dead")
++            self.dead = True
++            # TODO Nick - animate death?
++            self.kill()
++
++    def attack(self):
++        print("Minion.attack")
+         pass
+ 
+-    def take_damage(self, damage):
+-        pass
++    def combat_check(self, distance):
++        print("Minion.combat_check(distance=" + str(distance) + ")")
++        return False
+ 
++    # minions should probably just stay put where they are placed for now
+     def update(self, dt):
+-        pass
++        print("Minion.update()")
++        if self.combat_check(self.sight):
++            # engage in combat
++            # unclear if we need both a take damage and an attack function
++            self.attack()
++            print("\tMinion starting combat")
++
++    def log_me(self):
++        print("Minion, id = "+str(self.id) + " type" + self.name)
++        print("\t image path " + str(self.image))
++        print("\t dead = " + str(self.dead))
++        print("\t phase = " + str(self.phase))
++        print("\t health = " + str(self.health))
++        print("\t speed = "+str(self.speed) + " sight distance = " + str(self.sight))
++        print("\t attack type = " + self.attack_type + " amt = " + str(self.attack))
++        print("\t immunity type = " + str(self.resistance_type) + " amt = " + str(self.resistance))
++        print("\t weakness type = " + str(self.weakness_type) + " amt = " + str(self.weakness))
++        print("\t DM cost: reputation = " + str(self.reputation_cost) + " gold = " + str(self.gold_cost) + " unicorn tears = " + str(self.unicorn_tears_cost))
++
++        # TODO Should minions move? Might be bonus feature
++        print("\t position is (" + str(self.position[0]) + ", " + str(self.position[1]) + ")")
++        #print("\t direction X = " + str(self.directionX) + " direction Y = " + str(self.directionY))
++        #print("\t starting position is (" + str(self.starting_position[0]) + ", " + str(self.starting_position[1]) + ")")
++        # interpreter says i cant convert this one  to string
++        # TODO bug Shay about it
++        #print("\t ending position is (" + str(self.end_position[0]) + ", " + str(self.end_position[1]) + ")")
++        #print("\t current step = " + str(self.current_step) + " next step = " + str(self.next_step))
++        #print("\t path " + str(self.path))
++        print("\t flavor text: " + str(self.flavor_text))
+Index: codejam/entities/EnemyAdventurer.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- codejam/entities/EnemyAdventurer.py	(date 1509829087000)
++++ codejam/entities/EnemyAdventurer.py	(revision )
+@@ -2,33 +2,61 @@
+ from sqlalchemy import Column, Integer, String
+ import pygame as pg
+ import math
++import itertools
+ 
+ Base = declarative_base()
+ 
++"""
++ToDo: 
++    understand Shay's code
++    add a taunt table - adventurers taunt player
++    add images 
++    collision detection= no events, you have to do a `if rect_1.rect.colliderect(rect_2)`
++"""
+ 
++# For DB use, do not destroy
+ class EnemyAdventurer(Base):
+     __tablename__ = 'enemy'
+ 
+     id = Column(Integer, primary_key=True)
++    image = Column(String)
+     name = Column(String)
++    flavor_text = Column(String)
+     speed = Column(Integer)
+     health = Column(Integer)
++    phase = Column(String)
++    attack = Column(Integer)
++    attack_type = Column(String)
++    gold = Column(Integer)
++    unicorn_tears = Column(Integer)
++    reputation = Column(Integer)
++    resistance_type = Column(String)
++    resistance = Column(Integer)
++    weakness = Column(Integer)
++    weakness_type = Column(String)
++    sight = Column(Integer)
+ 
+-
+-class EnemyAdventurerGameObject(object):
+-    def __init__(self, enemy_entity=None, position=(0, 0), path=[]):
+-
+-        # Create a saveable entitiy
+-        # basically the entity is the loaded type from the DB
+-        # Make sure not to destroy it, however the game object is transient so please kill it
++# basically the entity is the loaded type from the DB
++# Make sure not to destroy it, however the game object is transient so please kill it
++
++
++class EnemyAdventurerGameObject(pg.sprite.Sprite):
++
++    id_generator = itertools.count(1)
++
++    def __init__(self, enemy_entity=None, position=(0, 0), path=[]):
++
++        super().__init__()
++
++        self.id = next(self.id_generator)
++        print("Enemy Adventurer init() id= "+str(self.id))
++
+         self.entity = enemy_entity
+         if self.entity is None:
+             self.entity = EnemyAdventurer
+ 
+-        # Creating a dead game object is silly, lets avoid that
+-        self.dead = False
+-
+         # TODO Convert this and path above to a queue and just pop things off it
++        #TODO - Make Shay explain
+         self.position = position
+         self.starting_position = position
+         self.end_position = None
+@@ -40,27 +68,79 @@
+         self.directionX = 0
+         self.directionY = 0
+ 
++
++        # default values
++        self.name = "Generic Adventurer"
++        self.flavor_text = "I'm an adventurer"
++        self.dead = False
++        self.speed = 1
++        self.sight = 1
++        self.health = 10
++        self.phase = "normal"
++        self.attack = 1
++        self.attack_type = "melee"  # general attacks are melee
++        self.resistance = 0
++        self.resistance_type = None
++        self.weakness = 0
++        self.weakness_type = None
++        self.image = None
++        self.gold = 1
++        self.unicorn_tears = 0
++        self.reputation = 1
++
++        self.log_me()
++
+     def handle_event(self, event):
+-        # Do whatever handling for the event that gets passed in here
++        #print("Enemy Adventurer handle_event(" + str(event) + ")")
++        # Mostly these seem to be mouse events, which we are not using atm
+         pass
+ 
+     def draw(self, surface):
+-        # Prolly all this will become a blit image, we may wanna refactor to mass blit at some point
+-        pg.draw.circle(
+-            surface,
+-            (255, 0, 0),
+-            (int(self.position[0] * 5 + self.position[0]), int(self.position[1] * 5 + self.position[1])),
+-            4
+-        )
++        #print("Enemy Adventurer draw() should be blue")
++        # If we dont have a graphic, default to a circle?
++        # Remove this before shipping
++        if self.image is None:
++            #print("EnemyAdventurer.draw() defaulting to circle")
++            blue = (0, 0, 250)
++            pg.draw.circle(
++                surface,
++                blue,
++                (int(self.position[0] * 5 + self.position[0]), int(self.position[1] * 5 + self.position[1])),
++                4
++            )
++        if self.phase == "combat":
++            print("EA id = " + str(self.id) + " name = " + self.name + "combat animation")
++            # TODO Nick - Animate Combat here
++        if self.phase == "normal":
++            # TODO Nick - Amimate regular motion
++            # print("EA id = " + str(self.id) + " name = " + self.name + "normal animation")
++            pass
+ 
+-    def take_damage(self, damage):
+-        ##Self explanitory,
+-        self.entity.health -= damage
++    def take_damage(self, damage_amt, damage_type):
++        print("Enemy Adventurer id= " + str(self.id) + " take_damage(" + str(damage_amt) + "," + damage_type + ")")
++        if damage_type == self.entity.immunity_type :
++            print("\tadventurer is immune to that damage type")
++            #TODO would be a good place to taunt the Dungeon Master
++        self.entity.health -= damage_amt
++        print("\tadventurer " + str(self.id) + " takes full damage. new health="+str(self.entity.health))
+         if self.entity.health <= 0:
++            print("\tadventurer " + str(self.id) + " is dead")
+             self.dead = True
+ 
++    #TODO rec
++    def combat_check(self, distance=1):
++        print("EnemyAdventurer.combat_check(" + str(distance) + ") id=" + str(id(self)))
++        return False
++
++    # TODO - bug in update
+     def update(self, dt):
+-        # This is called erry tick so do whatever updates here
++        #print("Enemy Adventurer base update()")
++
++        # Since this can't know what the other sprite might be to do the proper pygame rect chec
++        #it would be foolish to expect every adventurer to have knowlege of all
++        #    the traps, minions, etc. race conditions galore
++
++        # If there is no combat (interaction with traps count as combat) move on
+         next_point = self.path[self.next_step]
+         current_point = self.position
+         sqrted = math.sqrt(
+@@ -76,12 +156,37 @@
+             dx = self.directionX * self.entity.speed / dt
+             dy = self.directionY * self.entity.speed / dt
+             self.position = (self.position[0] + dx, self.position[1] + dy)
++        print("Enemy Adventurer id = " + str(self.id) + " type " + self.name + " moving to (" + str(self.position[0])+", " + str(self.position[1]) + ")")
+ 
+     def update_direction(self):
+-        # MAAATHHHHHHHHH
++        # print("Enemy Adventurer update_direction()")
+         next_point = self.path[self.next_step]
+         current_point = self.path[self.current_step]
+         self.distance = math.sqrt(
+             math.pow(next_point[0] - current_point[0], 2) + math.pow(next_point[1] - current_point[1], 2))
+         self.directionX = (next_point[1] - current_point[1]) // self.distance
+         self.directionY = (next_point[1] - current_point[1]) // self.distance
++
++    def log_me(self):
++        print("EA id = "+str(self.id) + " name = " + self.name)
++        print("\t image path " + str(self.image))
++        print("\t entity = "+ str(self.entity))
++        print("\t dead = " + str(self.dead))
++        print("\t phase = " + str(self.phase))
++        print("\t health = " + str(self.health))
++        print("\t speed = "+str(self.speed) + " sight distnace = " + str(self.sight))
++        print("\t attack type = " + self.attack_type + " amt = " + str(self.attack))
++        print("\t immunity type = " + str(self.resistance_type) + " amt = " + str(self.resistance))
++        print("\t weakness type = " + str(self.weakness_type) + " amt = " + str(self.weakness))
++        print("\t DM will gain: imfamy/reputation = " + str(self.reputation) + " gold = " + str(self.gold) + " unicorn tears = " + str(self.unicorn_tears))
++
++        print("\t position is (" + str(self.position[0]) + ", " + str(self.position[1]) + ")")
++        print("\t direction X = " + str(self.directionX) + " direction Y = " + str(self.directionY))
++        print("\t starting position is (" + str(self.starting_position[0]) + ", " + str(self.starting_position[1]) + ")")
++        # interpreter says i cant convert this one  to string
++        # TODO bug Shay about this nonprintable type
++        #print("\t ending position is (" + str(self.end_position[0]) + ", " + str(self.end_position[1]) + ")")
++        print("\t current step = " + str(self.current_step) + " next step = " + str(self.next_step))
++        print("\t path " + str(self.path))
++        print("\t flavor text: " + str(self.flavor_text))
++
+Index: codejam/entities/Minion_Goblin.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- codejam/entities/Minion_Goblin.py	(revision )
++++ codejam/entities/Minion_Goblin.py	(revision )
+@@ -0,0 +1,43 @@
++from entities.Minion import MinionGameObject
++import pygame as pg
++
++
++class Goblin(MinionGameObject):
++    def __init__(self):
++        print("Goblin.__init__()")
++        super(Goblin, self).__init__()
++        self.dead = False
++        self.name = "Goblin"
++        self.flavor_text = "I'll wipe that smile off your smug mug"
++        self.speed = 1
++        self.sight = 2
++        self.health = 10
++        self.attack = 1
++        self.attack_type = "melee"  # general attacks are melee
++        self.gold_cost = 2
++        self.unicorn_tears_cost = 0
++        self.reputation_cost = 0  # not a true cost, this minion will only work for you when you are evil enough
++        self.immunity_type = None
++        self.weakness = 0
++        self.weakness_type = None
++        self.image = None
++
++    def draw(self, surface):
++        print("Golbin.draw(), should be green")
++        # If we dont have a graphic, default to a circle?
++        if self.image is None:
++            print("\tdefaulting to circle")
++            green = (0, 255, 0)
++            pg.draw.circle(
++                surface,
++                green,
++                (int(self.position[0] * 5 + self.position[0]), int(self.position[1] * 5 + self.position[1])),
++                4
++            )
++    def handle_event(self, event):
++        print("Goblin.handle_event()")
++        super().handle_event(event)
++
++    def update(self, dt):
++        print("Goblin.update")
++        super().update(dt)
+Index: codejam/entities/Enemy_Ranger.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- codejam/entities/Enemy_Ranger.py	(revision )
++++ codejam/entities/Enemy_Ranger.py	(revision )
+@@ -0,0 +1,47 @@
++import pygame as pg
++
++from entities.EnemyAdventurer import EnemyAdventurerGameObject
++
++
++class EnemyRanger(EnemyAdventurerGameObject):
++    def __init__(self):
++        super(EnemyRanger, self).__init__()
++        #do not store this id, may not be unique, used for debugging during initial building
++        print("Ranger.init() id = " + str(self.id))
++        self.name = "Ranger"
++        self.flavor_text = "Brooding Level 1 Loner"
++        self.speed = 3
++        self.health = 5
++        self.attack = 2
++        self.attack_type = "melee"  # general attacks are melee
++        self.gold = 10
++        self.unicorn_tears = 0
++        self.reputation = 2
++        self.immunity_type = "undead"
++        self.weakness = 0
++        self.weakness_type = "fire"
++        #TODO once we have images, put the path here
++        self.image = None
++
++    def draw(self, surface):
++        print("Ranger.draw(), should be red")
++        # If we dont have a graphic, default to a circle?
++        if self.image is None:
++            print("\tdefaulting to circle")
++            red = (255, 0, 0)
++            pg.draw.circle(
++                surface,
++                red,
++                (int(self.position[0] * 5 + self.position[0]), int(self.position[1] * 5 + self.position[1])),
++                4
++            )
++    def handle_event(self, event):
++        print("Ranger handle_event()")
++        super().handle_event(event)
++        # Do whatever handling for the event that gets passed in here
++        pass
++
++    def update(self, dt):
++        print("Ranger update()")
++        super().update(dt)
++        pass
+Index: codejam/Game.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- codejam/Game.py	(date 1509829087000)
++++ codejam/Game.py	(revision )
+@@ -15,6 +15,7 @@
+         self.states = states
+         self.state_name = start_state
+         self.state = self.states[self.state_name]
++        self.state.startup({})
+ 
+     def event_loop(self):
+         for event in pg.event.get():
+Index: codejam/states/PlayingState.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- codejam/states/PlayingState.py	(date 1509829087000)
++++ codejam/states/PlayingState.py	(revision )
+@@ -1,20 +1,23 @@
+ from pygame.rect import Rect
+-import pygame  as pg
++import pygame as pg
+ 
+ from entities import GameMap
+ from entities.DungeonMaster import DungeonMasterGameObject
+ from entities.EnemyAdventurer import EnemyAdventurerGameObject
+ from services.AStar import AStar
++from services.EnemyWaveGenerator import EnemyWaveGenerator
+ from states.GameState import GameState
+ 
+ 
+ class PlayingState(GameState):
+     def __init__(self):
+         super(PlayingState, self).__init__()
++        self.engine = EnemyWaveGenerator()
+         self.dungeon_master = DungeonMasterGameObject()
+         self.enemies = None
+         self.shop = None
+         self.game_map = None
++        # TODO Nick - pass these values in from the main menu
+         self.map_width = 60
+         self.map_height = 100
+         self.colors = [
+@@ -32,7 +35,7 @@
+             self.game_map = GameMap.generate_map(self.map_width, self.map_height)
+             self.persist['map'] = self.game_map
+ 
+-        # TODO Convert to wave generator at some point
++        # TODO talk to shay about converting this over to the wave generator
+         if 'enemies' in self.persist and self.persist['enemies'] is not None:
+             self.enemies = self.persist['enemies']
+         else:
+@@ -49,7 +52,7 @@
+         if event.type == pg.QUIT:
+             self.quit = True
+         self.dungeon_master.handle_event(event)
+-        # TODO ADD MINION AND TARP HANDLING
++        # TODO ADD MINION AND TRAP HANDLING
+         for enemy in self.enemies:
+             enemy.handle_event(event)
+ 
+@@ -92,8 +95,17 @@
+ 
+         solver = AStar()
+         for i in range(0, len(starting_points) - 1):
+-            enemy = EnemyAdventurerGameObject()
+-            enemy.entity.speed = 10
++            enemy = self.engine.generate_adventurer()
++
++            # Dirty hack 
++            # minion wont move but should appear on screen, hardcoded to start, give Nick, Sy something to start on
++            minion = self.engine.generate_minion()
++            minion.position = (50 + (i*5), 50)
++            #TODO functionally should have its own sprite group, managed by engine
++            #   stuck it here to test out class
++            enemies.append(minion)
++
++            # ??
+             solver.clear()
+             solver.init_grid(self.map_width, self.map_height, (), starting_points[i], self.end_point)
+             path = solver.solve()

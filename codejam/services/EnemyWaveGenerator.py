@@ -26,3 +26,13 @@ class EnemyWaveGenerator(object):
         print("\t sight=" + str(minion.sight))
         print("\t speed=" + str(minion.speed))
         return minion
+
+    def generate_wave(self):
+        print("generating wave of enemies")
+        # add to the groups
+        pass
+
+    def update(self):
+        #will be called form palying state
+        # do combat checks
+        pass
