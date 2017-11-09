@@ -1,5 +1,6 @@
-from states.GameState import GameState
 import pygame as pg
+
+from states.GameState import GameState
 
 
 class MainMenuState(GameState):

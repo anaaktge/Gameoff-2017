@@ -1,6 +1,5 @@
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String
-import pygame as pg
+from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
@@ -12,9 +11,9 @@ class Trap(Base):
     name = Column(String)
 
 
-class TrapGameObject(pg.sprite.Sprite):
+class TrapGameObject(object):
     def __init__(self):
-        super().__init__()
+        pass
 
     def handle_event(self, event):
         pass
