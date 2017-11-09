@@ -29,5 +29,5 @@ class TitleScreenState(GameState):
         surface.fill(pg.Color("white"))
         surface.blit(self.image, self.image_rect)
 
-    def startup(self):
+    def startup(self, persistent):
         pg.mixer.music.play()  # play music

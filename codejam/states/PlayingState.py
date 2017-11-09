@@ -5,6 +5,7 @@ from entities import GameMap
 from entities.DungeonMaster import DungeonMasterGameObject
 from entities.EnemyAdventurer import EnemyAdventurerGameObject
 from services.AStar import AStar
+from services.EnemyWaveGenerator import EnemyWaveGenerator
 from states.GameState import GameState
 
 
@@ -23,6 +24,7 @@ class PlayingState(GameState):
             (255, 0, 0),
             (0, 0, 255)
         ]
+        self.engine = EnemyWaveGenerator()
 
     def startup(self, persistent):
         self.persist = persistent
@@ -86,23 +88,33 @@ class PlayingState(GameState):
 
     def generate_enemies(self):
         enemies = []
+        starting_points = [
+            (self.map_width - 2, 0),
+            (1, 0),
+            (self.map_width // 2, 0),
+        ]
+
         self.players = []
-        end_point = self.game_map.ending_room.get_pos()
-        starting_point = self.game_map.starting_room.get_pos()
-        walls = []
-        for i in range(0, self.game_map.width):
-            for j in range(0, self.game_map.height):
-                if self.game_map.generated_map[i][j] != 0:
-                    walls.append((i, j))
+        self.end_point = (self.map_width // 2, self.map_height // 2)
 
         solver = AStar()
-        enemy = EnemyAdventurerGameObject()
-        enemy.entity.speed = 10
-        solver.clear()
-        solver.init_grid(self.map_width, self.map_height, walls, starting_point, end_point)
-        path = solver.solve()
-        enemy.path = path
-        enemy.position = starting_point
-        enemies.append(enemy)
+        for i in range(0, len(starting_points) - 1):
+            enemy = self.engine.generate_adventurer()
+
+            # Dirty hack
+            # minion wont move but should appear on screen, hardcoded to start, give Nick, Sy something to start on
+            minion = self.engine.generate_minion()
+            minion.position = (50 + (i*5), 50)
+            #TODO functionally should have its own sprite group, managed by engine
+            #   stuck it here to test out class
+            enemies.append(minion)
+
+            # ??
+            solver.clear()
+            solver.init_grid(self.map_width, self.map_height, (), starting_points[i], self.end_point)
+            path = solver.solve()
+            enemy.path = path
+            enemy.position = starting_points[i]
+            enemies.append(enemy)
 
         return enemies
