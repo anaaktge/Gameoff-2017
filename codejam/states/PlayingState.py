@@ -3,8 +3,7 @@ from pygame.rect import Rect
 
 from entities import GameMap
 from entities.DungeonMaster import DungeonMasterGameObject
-from entities.EnemyAdventurer import EnemyAdventurerGameObject
-from services.AStar import AStar
+from entities.Shop import Shop
 from services.EnemyWaveGenerator import EnemyWaveGenerator
 from states.GameState import GameState
 
@@ -24,7 +23,13 @@ class PlayingState(GameState):
             (255, 0, 0),
             (0, 0, 255)
         ]
+        self.rectangle = Rect(0, 0, 1000, 1000)
+        self.size = (1950, 1100)
+        self.zoom = 1
         self.engine = EnemyWaveGenerator()
+        self.add_thing = False
+        self.shop = None
+        self.drag_mouse = False
 
     def startup(self, persistent):
         self.persist = persistent
@@ -39,22 +44,46 @@ class PlayingState(GameState):
         if 'enemies' in self.persist and self.persist['enemies'] is not None:
             self.enemies = self.persist['enemies']
         else:
-            self.enemies = self.generate_enemies()
+            self.enemies = self.engine.generate_enemies(self.map_width, self.map_height,
+                                                        self.game_map.starting_room.get_pos(),
+                                                        self.game_map.ending_room.get_pos())
             self.persist['enemies'] = self.enemies
 
         if 'dungeon_master' in self.persist and self.persist['dungeon_master'] is not None:
             self.dungeon_master = self.persist['dungeon_master']
         else:
             self.persist['dungeon_master'] = self.dungeon_master
+        self.shop = Shop(self.dungeon_master)
+        self.rectangle.centerx = self.game_map.ending_room.x
+        self.rectangle.centery = self.game_map.ending_room.y
 
     def get_event(self, event):
         # Handle clicks here
         if event.type == pg.QUIT:
             self.quit = True
+        if event.type == pg.MOUSEBUTTONUP:
+            self.drag_mouse = False
         if event.type == pg.MOUSEBUTTONDOWN:
+            if event.button == 4:
+                if self.zoom > 0.2:
+                    self.zoom -= .1
+            elif event.button == 5:
+                if self.zoom < 1.2:
+                    self.zoom += .1
             if event.button == 1:
-                self.game_map = GameMap.generate_game_map(self.map_width, self.map_height)
-                self.enemies = self.generate_enemies()
+                if not self.add_thing:
+                    self.drag_mouse = True
+                    mouse_x, mouse_y = event.pos
+                    self.offset_x = self.rectangle.centerx - mouse_x
+                    self.offset_y = self.rectangle.centery - mouse_y
+                else:
+                    self.game_map.generated_map[10][10] = 4
+
+        elif event.type == pg.MOUSEMOTION:
+            if self.drag_mouse:
+                mouse_x, mouse_y = event.pos
+                self.rectangle.center = (mouse_x + self.offset_x, mouse_y + self.offset_y)
+
         self.dungeon_master.handle_event(event)
         # TODO ADD MINION AND TARP HANDLING
         for enemy in self.enemies:
@@ -74,47 +103,30 @@ class PlayingState(GameState):
     def draw(self, surface):
         # DRAW EVERYTHING HERE
         surface.fill(pg.Color("black"))
+        draw_surface = self.get_drawable_surface()
+
+        sub_surface = pg.Surface((self.rectangle.size[0] * self.zoom, self.rectangle.size[1] * self.zoom))
+
+        sub_surface.blit(draw_surface, (0, 0),
+                         Rect(self.rectangle.x, self.rectangle.y, 600 + (200 * self.zoom), 8000 + (200 * self.zoom)))
+
+        s = pg.transform.scale(sub_surface, (self.screen_rect.width, self.screen_rect.height))
+        surface.blit(s, (0, 0), (0, 0, self.screen_rect.width, self.screen_rect.height))
+        shop_surface = self.shop.draw((200, 800))
+        surface.blit(shop_surface, (1080, 0))
+
+    def get_drawable_surface(self):
+        draw_surface = pg.Surface((6000, 6000))
         # TODO change this to drawing tiles or a mesh or something to improve performance
         for i in range(self.map_width):
             for j in range(self.map_height):
                 rect = Rect(i + i * 5, j + j * 5, 5, 5)
                 color = self.colors[self.game_map.generated_map[i][j]]
-                pg.draw.rect(surface, color, rect)
+                pg.draw.rect(draw_surface, color, rect)
 
         # TODO RESEARCH BATCH DRAWING METHODS
-        self.dungeon_master.draw(surface)
+        self.dungeon_master.draw(draw_surface)
         for enemy in self.enemies:
-            enemy.draw(surface)
+            enemy.draw(draw_surface)
 
-    def generate_enemies(self):
-        enemies = []
-        starting_points = [
-            (self.map_width - 2, 0),
-            (1, 0),
-            (self.map_width // 2, 0),
-        ]
-
-        self.players = []
-        self.end_point = (self.map_width // 2, self.map_height // 2)
-
-        solver = AStar()
-        for i in range(0, len(starting_points) - 1):
-            enemy = self.engine.generate_adventurer()
-
-            # Dirty hack
-            # minion wont move but should appear on screen, hardcoded to start, give Nick, Sy something to start on
-            minion = self.engine.generate_minion()
-            minion.position = (50 + (i*5), 50)
-            #TODO functionally should have its own sprite group, managed by engine
-            #   stuck it here to test out class
-            enemies.append(minion)
-
-            # ??
-            solver.clear()
-            solver.init_grid(self.map_width, self.map_height, (), starting_points[i], self.end_point)
-            path = solver.solve()
-            enemy.path = path
-            enemy.position = starting_points[i]
-            enemies.append(enemy)
-
-        return enemies
+        return draw_surface

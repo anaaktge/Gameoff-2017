@@ -5,6 +5,8 @@ from entities.Minion_Goblin import Goblin
 
 #Spits out adventurers
 # Probably will have to manage combat ?
+from services.AStar import AStar
+
 
 class EnemyWaveGenerator(object):
     def __init__(self):
@@ -26,3 +28,25 @@ class EnemyWaveGenerator(object):
         print("\t sight=" + str(minion.sight))
         print("\t speed=" + str(minion.speed))
         return minion
+
+    def generate_enemies(self, width, height, start_pos, end_pos):
+        enemies = []
+        solver = AStar()
+        enemy = self.generate_adventurer()
+
+        # Dirty hack
+        # minion wont move but should appear on screen, hardcoded to start, give Nick, Sy something to start on
+        minion = self.generate_minion()
+        minion.position = (50, 50)
+        #TODO functionally should have its own sprite group, managed by engine
+        #   stuck it here to test out class
+        enemies.append(minion)
+
+        # ??
+        solver.clear()
+        solver.init_grid(width, height, (), start_pos, end_pos)
+        path = solver.solve()
+        enemy.path = path
+        enemy.position = start_pos
+        enemies.append(enemy)
+        return enemies
