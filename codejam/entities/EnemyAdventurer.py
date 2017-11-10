@@ -49,8 +49,8 @@ class EnemyAdventurerGameObject(object):
 
     def draw(self, surface):
         # Prolly all this will become a blit image, we may wanna refactor to mass blit at some point
-        rect = Rect(self.position[0]*20, self.position[1]*20, 20,20)
-        drawable = pg.transform.scale(self.sprite,(20,20))
+        rect = Rect(self.position[0]*20, self.position[1]*20, 10,10)
+        drawable = pg.transform.scale(self.sprite,(10,10))
         surface.blit(drawable, rect)
 
     def take_damage(self, damage):

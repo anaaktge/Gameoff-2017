@@ -47,7 +47,7 @@ class GameMap(object):
             solver.init_grid(self.width, self.height, (), current_room.get_pos(), next_room.get_pos())
             solution = solver.solve()
             for i in solution:
-                self.set_at(i[0], j[0], 0)
+                self.set_at(i[0], i[1], 0)
             current_room = next_room
 
     def add_path_between(self, room_1, room_2):

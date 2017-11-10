@@ -20,6 +20,7 @@ class PlayingState(GameState):
         self.map_width = 36*2
         self.map_height = 66*2
         self.zoom = 1
+        self.tile_width = 20
         self.sprites = [
             pg.image.load(os.path.join('assets', 'grass.png')),
             pg.image.load(os.path.join('assets', 'cobble.png')),
@@ -42,6 +43,8 @@ class PlayingState(GameState):
         self.offset_y = 0
         self.offset_x = 0
         self.add_thing = False
+
+
 
     def startup(self, persistent):
         self.persist = persistent
@@ -83,9 +86,9 @@ class PlayingState(GameState):
             self.drag_mouse = False
         if event.type == pg.MOUSEBUTTONDOWN:
             if event.button == 4:
-                self.zoom -= .01
+                self.zoom -= .1
             elif event.button == 5:
-                self.zoom += .01
+                self.zoom += .1
             if event.button == 1:
                 if not self.add_thing:
                     self.drag_mouse = True
@@ -118,14 +121,16 @@ class PlayingState(GameState):
 
     def draw(self, surface):
         draw_surface = pg.Surface((6000, 6000))
+        rectangle = self.rectangle.copy()
+        rectangle.size = (self.rectangle.size[0]*self.zoom, self.rectangle.size[1]*self.zoom)
         # DRAW EVERYTHING HERE
         # TODO change this to drawing tiles or a mesh or something to improve performance
         for i in range(0,self.map_width-1):
             for j in range(0, self.map_height-1):
-                rect = Rect(i * 20, j * 20, 20, 20)
+                rect = Rect(i * self.tile_width, j * self.tile_width, self.tile_width, self.tile_width)
                 color = self.sprites[self.game_map.generated_map[i][j]]
-                if self.rectangle.contains(rect) and self.game_map.generated_map[i][j]!=1:
-                    color = pg.transform.scale(color, (20,20))
+                if rectangle.contains(rect) and self.game_map.generated_map[i][j]!=1:
+                    color = pg.transform.scale(color, (self.tile_width, self.tile_width))
                     draw_surface.blit(color, rect)
 
         # TODO RESEARCH BATCH DRAWING METHODS
@@ -134,8 +139,10 @@ class PlayingState(GameState):
             enemy.draw(draw_surface)
         #this does the drawing in the square on the screen
         #TODO prolly figure out a better method of doing this
-        sub_surface = pg.Surface(self.rectangle.size)
-        sub_surface.blit(draw_surface, (0, 0), Rect(self.rectangle.x,self.rectangle.y,800,1000))
+        sub_surface = pg.Surface((self.rectangle.size[0]*self.zoom, self.rectangle.size[1]*self.zoom))
+
+        sub_surface.blit(draw_surface, (0, 0), Rect(self.rectangle.x,self.rectangle.y,800*self.zoom,1000*self.zoom))
+
         s = pg.transform.scale(sub_surface, (self.screen_rect.width, self.screen_rect.height))
         surface.blit(s, (0,0), (0,0,self.screen_rect.width, self.screen_rect.height))
         self.draw_sidebar(surface)
@@ -154,6 +161,7 @@ class PlayingState(GameState):
         solver.clear()
         solver.init_grid(self.map_width, self.map_height, walls, self.game_map.starting_room.get_pos(), self.game_map.ending_room.get_pos())
         path = solver.solve()
+        path.append(self.game_map.ending_room.get_pos())
         enemy.position = self.game_map.starting_room.get_pos()
         self.persist['path'] = path
         enemy.path = path
