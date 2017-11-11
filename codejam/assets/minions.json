@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "image": "goblin_face.png",
+    "name": "Red Goblin",
+    "flavor_text": "bwahaha",
+    "speed": 10,
+    "health": 50,
+    "attack": 90,
+    "attack_type": 1,
+    "gold_cost": 40,
+    "unicorn_tear_cost": 50,
+    "reputation_cost": 0,
+    "resistance_type": 1,
+    "resistance": 2,
+    "weakness": 3,
+    "weakness_type": 2,
+    "sight": 4,
+    "phase": 2,
+    "color": [
+      255,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 2,
+    "image": "goblin_face.png",
+    "name": "Green Goblin",
+    "flavor_text": "bwahaha",
+    "speed": 10,
+    "health": 50,
+    "attack": 90,
+    "attack_type": 1,
+    "gold_cost": 30,
+    "unicorn_tear_cost": 60,
+    "reputation_cost": 0,
+    "resistance_type": 1,
+    "resistance": 2,
+    "weakness": 3,
+    "weakness_type": 2,
+    "sight": 4,
+    "phase": 2,
+    "color": [
+      0,
+      255,
+      0
+    ]
+  },
+  {
+    "id": 3,
+    "image": "goblin_face.png",
+    "name": "Blue Goblin",
+    "flavor_text": "bwahaha",
+    "speed": 10,
+    "health": 70,
+    "attack": 50,
+    "attack_type": 1,
+    "gold_cost": 60,
+    "unicorn_tear_cost": 40,
+    "reputation_cost": 0,
+    "resistance_type": 1,
+    "resistance": 2,
+    "weakness": 3,
+    "weakness_type": 2,
+    "sight": 4,
+    "phase": 2,
+    "color": [
+      0,
+      0,
+      255
+    ]
+  },
+  {
+    "id": 1,
+    "image": "goblin_face.png",
+    "name": "Red Goblin 2",
+    "flavor_text": "bwahaha",
+    "speed": 10,
+    "health": 50,
+    "attack": 90,
+    "attack_type": 1,
+    "gold_cost": 40,
+    "unicorn_tear_cost": 50,
+    "reputation_cost": 0,
+    "resistance_type": 1,
+    "resistance": 2,
+    "weakness": 3,
+    "weakness_type": 2,
+    "sight": 4,
+    "phase": 2,
+    "color": [
+      255,
+      0,
+      0
+    ]
+  },
+  {
+    "id": 2,
+    "image": "goblin_face.png",
+    "name": "Green Goblin 2",
+    "flavor_text": "bwahaha",
+    "speed": 10,
+    "health": 50,
+    "attack": 90,
+    "attack_type": 1,
+    "gold_cost": 30,
+    "unicorn_tear_cost": 60,
+    "reputation_cost": 0,
+    "resistance_type": 1,
+    "resistance": 2,
+    "weakness": 3,
+    "weakness_type": 2,
+    "sight": 4,
+    "phase": 2,
+    "color": [
+      0,
+      255,
+      0
+    ]
+  }
+]

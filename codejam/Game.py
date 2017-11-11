@@ -61,7 +61,7 @@ if __name__ == "__main__":
         "MainMenu": MainMenuState(),
         "PlayingState": PlayingState()
     }
-    game = Game(screen, states, "Title")
+    game = Game(screen, states, "PlayingState")
     game.run()
     pg.quit()
     sys.exit()
