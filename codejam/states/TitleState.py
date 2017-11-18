@@ -24,6 +24,7 @@ class TitleScreenState(GameState):
         if event.type == pg.QUIT:
             self.quit = True
 
+
     def draw(self, surface):
         # EZ MODE FOR NOW
         surface.fill(pg.Color("white"))

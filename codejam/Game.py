@@ -7,6 +7,7 @@ from states.TitleState import TitleScreenState
 from states.PlayingState import PlayingState
 from states.SplashScreenState import SplashScreenState
 from states.CreditsState import CreditsState
+from states.NewGameState import NewGameState
 
 
 class Game(object):
@@ -59,6 +60,7 @@ if __name__ == "__main__":
         "Title": TitleScreenState(),
         "Splash": SplashScreenState(),
         "MainMenu": MainMenuState(),
+        "NewGame": NewGameState(),
         "PlayingState": PlayingState(),
         "Credits": CreditsState()
     }

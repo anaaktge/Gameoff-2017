@@ -2,6 +2,7 @@ from assets.Colors import Colors
 import pygame as pg
 
 class Buttons(object):
+
     musicVolume = 'normal'
 
     def button(self, surface, text, x, y, width, height, inactive_color, active_color, extra_color, action, size): #button creation function
@@ -14,7 +15,6 @@ class Buttons(object):
 
             if click[0] == 1 and action != None:
                 if action == "play":
-                    pg.mixer.music.stop()
                     self.done = True
                 if action == "load":
                     pass
@@ -23,8 +23,11 @@ class Buttons(object):
                 if action == "quit":
                      pg.quit()
                      quit()
+                if action =="submit":
+                    self.done = True
+                    pg.mixer.music.stop()
                 if action == 'close_settings':
-                    pass # self.SettingsDisplay.settings_menu = False
+                    self.SettingsDisplay.screen_menu = False
                 if action == "full_screen":
                     pg.display.set_mode((0, 0), pg.FULLSCREEN)
                 if action == "normal_screen":
@@ -38,7 +41,8 @@ class Buttons(object):
                 if action =="rewind_audio":
                     pg.mixer.music.rewind()
                 if action == "credits":
-                    pass
+                    self.next_state = "CreditsState"
+                    self.done = True
         else:
             pg.draw.rect(surface, extra_color, (x, y, width, height))
             pg.draw.rect(surface, active_color, (x, y, width-5, height-5))
@@ -46,7 +50,7 @@ class Buttons(object):
 
 
 
-        Buttons.text_to_button(self, surface, text, self.black, x, y, width, height, size)
+        Buttons.text_to_button(self, surface, text, Colors.black, x, y, width, height, size)
 
     def text_to_button(self, surface, msg, color, buttonx, buttony, buttonwidth, buttonheight, size="small"):  # text in button function
         textSurf, textRect = Buttons.text_objects(self, msg, color, size)
